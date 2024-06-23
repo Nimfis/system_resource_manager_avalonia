@@ -1,20 +1,27 @@
 ﻿using System.Threading.Tasks;
-using System;
 using System.Timers;
 using ReactiveUI;
+using AvaloniaSystemResourceManager.Services;
 
 namespace AvaloniaSystemResourceManager.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private string _cpuUsage;
         private Timer _timer;
+
+        private string _cpuUsage;
+        private string _memoryUsage;
+
+        private CpuService _cpuService;
+        private MemoryService _memoryService;
 
         public MainWindowViewModel()
         {
             Greeting = "xD";
             CpuUsage = "0%";
-            StartCpuUsageUpdate();
+            _cpuService = new CpuService();
+            _memoryService = new MemoryService();
+            StartSystemResourceDiagnosticsUpdateTimer();
         }
 
         public string Greeting { get; }
@@ -25,25 +32,25 @@ namespace AvaloniaSystemResourceManager.ViewModels
             set => this.RaiseAndSetIfChanged(ref _cpuUsage, value);
         }
 
-        private void StartCpuUsageUpdate()
+        public string MemoryUsage
+        {
+            get => _memoryUsage;
+            set => this.RaiseAndSetIfChanged(ref _memoryUsage, value);
+        }
+
+        private void StartSystemResourceDiagnosticsUpdateTimer()
         {
             _timer = new Timer(2000); // Update every 2 seconds
-            _timer.Elapsed += async (sender, e) => await UpdateCpuUsage();
+            _timer.Elapsed += async (sender, e) => await UpdateSystemResourcesUsageValues();
             _timer.Start();
         }
 
-        private async Task UpdateCpuUsage()
+        private async Task UpdateSystemResourcesUsageValues()
         {
-            var cpuUsageValue = await GetCpuUsageAsync();
-            CpuUsage = $"{cpuUsageValue}%";
-        }
-
-        private async Task<int> GetCpuUsageAsync()
-        {
-            // Simulate an asynchronous operation to get CPU usage
-            await Task.Delay(100); // Simulate delay
-            var random = new Random();
-            return random.Next(0, 100); // Simulate CPU usage value
+            var cpuUsageValue = await _cpuService.GetCpuUsageAsync();
+            var memoryUsageValue = await _memoryService.GetMemoryUsageAsync();
+            CpuUsage = $"{cpuUsageValue:F2}%";
+            MemoryUsage = $"{memoryUsageValue:F2}%";
         }
     }
 }
