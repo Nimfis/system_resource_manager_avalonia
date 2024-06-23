@@ -22,7 +22,8 @@
 		</Grid.ColumnDefinitions>
 
 		<StackPanel Grid.Column="0">
-			
+			<TextBlock Text="CPU Usage:" FontWeight="Bold" FontSize="16" Margin="5"/>
+			<TextBlock Text="{Binding CpuUsage}" FontSize="14" Margin="5"/>
 		</StackPanel>
 
 		
