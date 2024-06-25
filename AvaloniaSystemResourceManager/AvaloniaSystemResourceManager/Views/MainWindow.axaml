@@ -22,13 +22,13 @@
 		</Grid.ColumnDefinitions>
 
 		<StackPanel Grid.Column="0">
-			<TextBlock Text="CPU Usage:" FontWeight="Bold" FontSize="16" Margin="5"/>
-			<TextBlock Text="{Binding CpuUsage}" FontSize="14" Margin="5"/>
-			<TextBlock Text="RAM Usage:" FontWeight="Bold" FontSize="16" Margin="5"/>
-			<TextBlock Text="{Binding MemoryUsage}" FontSize="14" Margin="5"/>
+			<TextBlock Text="CPU:" FontWeight="Bold" FontSize="16" Margin="5"/>
+			<TextBlock Text="{Binding CpuUsagePercentage}" FontSize="14" Margin="5"/>
+			<TextBlock Text="RAM:" FontWeight="Bold" FontSize="16" Margin="5"/>
+			<TextBlock Text="{Binding MemoryAvailability}" FontSize="14" Margin="5"/>
+			<TextBlock Text="Wi-Fi:" FontWeight="Bold" FontSize="16" Margin="5"/>
+			<TextBlock Text="{Binding WifiUsage}" FontSize="14" Margin="5"/>
 		</StackPanel>		
-		
-		<Button Content="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
 	</Grid>
 
 </Window>
