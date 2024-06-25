@@ -28,6 +28,18 @@
 			<TextBlock Text="{Binding MemoryAvailability}" FontSize="14" Margin="5"/>
 			<TextBlock Text="Wi-Fi:" FontWeight="Bold" FontSize="16" Margin="5"/>
 			<TextBlock Text="{Binding WifiUsage}" FontSize="14" Margin="5"/>
+
+			<ItemsControl ItemsSource="{Binding GpuInfos}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Vertical">
+							<TextBlock Text="{Binding Name}" FontWeight="Bold" />
+							<TextBlock Text="{Binding MemoryGB, StringFormat='Memory: {0:F2} GB'}" />
+						</StackPanel>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+			
 		</StackPanel>		
 	</Grid>
 
