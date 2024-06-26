@@ -20,6 +20,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
         private MemoryService _memoryService;
         private WifiService _wifiService;
         private GpuService _gpuService;
+        private DiskService _diskService;
 
         public MainWindowViewModel()
         {
@@ -31,6 +32,8 @@ namespace AvaloniaSystemResourceManager.ViewModels
             _memoryService = new MemoryService();
             _wifiService = new WifiService();
             _gpuService = new GpuService();
+            _diskService = new DiskService();
+
             StartSystemResourceDiagnosticsUpdateTimer();
         }
 
@@ -53,6 +56,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
         }
 
         public ObservableCollection<GpuInfoViewModel> GpuInfos { get; } = new ObservableCollection<GpuInfoViewModel>();
+        public ObservableCollection<DiskInfoViewModel> DiskInfos { get; } = new ObservableCollection<DiskInfoViewModel>();
 
         private void StartSystemResourceDiagnosticsUpdateTimer()
         {
