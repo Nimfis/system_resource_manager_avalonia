@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using System.Timers;
+﻿using System;
 using ReactiveUI;
-using AvaloniaSystemResourceManager.Services;
-using System;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Timers;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using AvaloniaSystemResourceManager.Services;
 
 namespace AvaloniaSystemResourceManager.ViewModels
 {
@@ -76,6 +76,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
             var wifiSSID = await _wifiService.GetWifiSSIDAsync();
 
             var gpuInfoList = await _gpuService.GetGpuInfosAsync();
+            var diskInfoList = await _diskService.GetDiskUsageAsync();
 
             CpuUsagePercentage = $"{cpuUsagePercentageValue:F2}%";
             MemoryAvailability = $"{memoryStatus.UsedMemoryGB:F2}/{memoryStatus.TotalMemoryGB:F2} GB ({memoryUsagePercentageValue:F2}%)";
@@ -94,7 +95,31 @@ namespace AvaloniaSystemResourceManager.ViewModels
                         MemoryGB = gpuInfo.MemoryGB
                     });
                 }
-            }   
+            }
+
+            int diskIndex = 0;
+            foreach (var diskInfo in diskInfoList)
+            {
+                var existingDiskInfo = DiskInfos.FirstOrDefault(x => x.Name == diskInfo.Name);
+
+                if (existingDiskInfo != null)
+                {
+                    existingDiskInfo.WriteSpeedMBps = diskInfo.WriteSpeedMBps;
+                    existingDiskInfo.ReadSpeedMBps = diskInfo.ReadSpeedMBps;
+                }
+                else
+                {
+                    DiskInfos.Add(new DiskInfoViewModel()
+                    {
+                        Name = diskInfo.Name,
+                        DisplayName = $"Disk {diskIndex}: ({diskInfo.Name})",
+                        WriteSpeedMBps = diskInfo.WriteSpeedMBps,
+                        ReadSpeedMBps = diskInfo.ReadSpeedMBps,
+                    });
+
+                    diskIndex++;
+                }
+            }
         }
     }
 }

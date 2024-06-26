@@ -6,6 +6,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
     {
 
         private string _name;
+        private string _displayName;
         private double _writeSpeedMBps;
         private double _readSpeedMBps;
 
@@ -13,6 +14,12 @@ namespace AvaloniaSystemResourceManager.ViewModels
         {
             get => _name;
             set => this.RaiseAndSetIfChanged(ref _name, value);
+        }
+
+        public string DisplayName
+        {
+            get => _displayName;
+            set => this.RaiseAndSetIfChanged(ref _displayName, value);
         }
 
         public double WriteSpeedMBps
@@ -26,6 +33,5 @@ namespace AvaloniaSystemResourceManager.ViewModels
             get => _readSpeedMBps;
             set => this.RaiseAndSetIfChanged(ref _readSpeedMBps, value);
         }
-
     }
 }

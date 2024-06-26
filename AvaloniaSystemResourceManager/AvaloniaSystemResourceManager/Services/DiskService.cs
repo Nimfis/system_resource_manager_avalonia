@@ -34,18 +34,5 @@ namespace AvaloniaSystemResourceManager.Services
                 }).ToList();
             });
         }
-
-        public async Task<string[]> GetDiskNamesAsync()
-        {
-            return await Task.Run(() =>
-            {
-                var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-                var diskNames = searcher.Get()
-                                        .Cast<ManagementObject>()
-                                        .Select(mo => mo["Model"].ToString())
-                                        .ToArray();
-                return diskNames;
-            });
-        }
     }
 }
