@@ -58,7 +58,13 @@
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Gray" />
 
 		<Grid Grid.Column="2">
-			<lvc:CartesianChart HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Series="{Binding CpuUsageSeries}" Title="{Binding Title}" />
+			<lvc:CartesianChart 
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch"
+				Series="{Binding CpuUsageSeries}"
+				Title="{Binding Title}"
+				YAxes="{Binding YAxes}"
+				XAxes="{Binding XAxes}"/>
 		</Grid>
 	</Grid>
 </Window>

@@ -16,6 +16,8 @@ namespace AvaloniaSystemResourceManager.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private const int MAX_CHART_SECONDS = 60;
+
         private Timer _timer;
         private string _cpuUsagePercentage;
         private string _memoryAvailability;
@@ -41,20 +43,47 @@ namespace AvaloniaSystemResourceManager.ViewModels
             {
                 new LineSeries<double>
                 {
-                    Values = new ObservableCollection<double>(new List<double>() { 1, 2, 3, 4, 5, 6, 7, 10 }),
-                    Fill = null
-                }
+                    Values = new ObservableCollection<double>(),
+                    Fill = new SolidColorPaint(SKColors.CornflowerBlue.WithAlpha(50)),
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    LineSmoothness = 0,
+                    Stroke = new SolidColorPaint(SKColors.CornflowerBlue) { StrokeThickness = 2 },
+                },
             };
 
             StartSystemResourceDiagnosticsUpdateTimer();
         }
+
+        public IEnumerable<Axis> YAxes { get; set; } = new List<Axis>()
+        {
+            new Axis()
+            {
+                MinLimit = 0,
+                MaxLimit = 100,
+                Labeler = value => value.ToString("0") + "%"
+            }
+        };
+
+        public IEnumerable<Axis> XAxes { get; set; } = new List<Axis>()
+        {
+                new Axis()
+                {
+                    MinLimit = 0,
+                    MaxLimit = MAX_CHART_SECONDS,
+                    Labeler = value => (value).ToString("0") + "s",
+                    Position = LiveChartsCore.Measure.AxisPosition.Start,
+                    IsVisible = true,
+                    LabelsRotation = 0,
+                }
+        };
 
         public LabelVisual Title { get; set; } = new LabelVisual
         {
             Text = "Chart title",
             TextSize = 25,
             Padding = new LiveChartsCore.Drawing.Padding(15),
-            Paint = new SolidColorPaint(SKColors.DarkSlateGray)
+            Paint = new SolidColorPaint(SKColors.DarkSlateGray),
         };
 
         public string CpuUsagePercentage
@@ -77,6 +106,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
 
         public ObservableCollection<GpuInfoViewModel> GpuInfos { get; } = new ObservableCollection<GpuInfoViewModel>();
         public ObservableCollection<DiskInfoViewModel> DiskInfos { get; } = new ObservableCollection<DiskInfoViewModel>();
+
         public ObservableCollection<ISeries> CpuUsageSeries { get; }
 
         private void StartSystemResourceDiagnosticsUpdateTimer()
@@ -89,7 +119,6 @@ namespace AvaloniaSystemResourceManager.ViewModels
         private async Task UpdateSystemResourcesUsageValues()
         {
             var cpuUsagePercentageValue = await _cpuService.GetCpuUsageAsync();
-            UpdateCpuUsageSeries(cpuUsagePercentageValue);
             CpuUsagePercentage = $"{cpuUsagePercentageValue:F2}%";
 
             var memoryUsagePercentageValue = await _memoryService.GetMemoryUsageAsync();
@@ -136,6 +165,8 @@ namespace AvaloniaSystemResourceManager.ViewModels
                     diskIndex++;
                 }
             }
+
+            UpdateCpuUsageSeries(cpuUsagePercentageValue);
         }
 
         private void UpdateCpuUsageSeries(double cpuUsage)
@@ -144,7 +175,7 @@ namespace AvaloniaSystemResourceManager.ViewModels
             var values = series.Values as ObservableCollection<double>;
 
             values.Add(cpuUsage);
-            if (values.Count > 30) // Keep only the last 30 values
+            if (values.Count >= MAX_CHART_SECONDS)
             {
                 values.RemoveAt(0);
             }
