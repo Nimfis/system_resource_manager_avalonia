@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AvaloniaSystemResourceManager.ViewModels"
+		xmlns:e="using:AvaloniaSystemResourceManager.Enums"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
@@ -24,12 +25,32 @@
 		</Grid.ColumnDefinitions>
 
 		<StackPanel Grid.Column="0">
-			<TextBlock Text="CPU:" FontWeight="Bold" FontSize="16" Margin="5"/>
-			<TextBlock Text="{Binding CpuUsagePercentage}" FontSize="14" Margin="5"/>
-			<TextBlock Text="RAM:" FontWeight="Bold" FontSize="16" Margin="5"/>
-			<TextBlock Text="{Binding MemoryAvailability}" FontSize="14" Margin="5"/>
-			<TextBlock Text="Wi-Fi:" FontWeight="Bold" FontSize="16" Margin="5"/>
-			<TextBlock Text="{Binding WifiUsage}" FontSize="14" Margin="5"/>
+			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.CPU}"
+					HorizontalAlignment="Stretch" Margin="5" Height="60">
+				
+				<StackPanel Orientation="Vertical">
+					<TextBlock Text="CPU:" FontWeight="Bold" FontSize="16" />
+					<TextBlock Text="{Binding CpuUsagePercentage}" FontSize="12" Margin="0,5,0,0"/>
+				</StackPanel>
+			</Button>
+
+			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.RAM}"
+					HorizontalAlignment="Stretch" Margin="5" Height="60">
+
+				<StackPanel Orientation="Vertical">
+					<TextBlock Text="Memory:" FontWeight="Bold" FontSize="16" />
+					<TextBlock Text="{Binding MemoryAvailability}" FontSize="12" Margin="0,5,0,0"/>
+				</StackPanel>
+			</Button>
+
+			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.WiFi}"
+					HorizontalAlignment="Stretch" Margin="5" Height="70">
+
+				<StackPanel Orientation="Vertical">
+					<TextBlock Text="Wi-Fi:" FontWeight="Bold" FontSize="16" />
+					<TextBlock Text="{Binding WifiUsage}" FontSize="12" Margin="0,5,0,0" />
+				</StackPanel>
+			</Button>
 
 			<ItemsControl ItemsSource="{Binding DiskInfos}">
 				<ItemsControl.ItemTemplate>
@@ -58,10 +79,10 @@
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Gray" />
 
 		<Grid Grid.Column="2">
-			<lvc:CartesianChart 
+			<lvc:CartesianChart
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch"
-				Series="{Binding CpuUsageSeries}"
+				Series="{Binding CurrentResourceSeries}"
 				Title="{Binding Title}"
 				YAxes="{Binding YAxes}"
 				XAxes="{Binding XAxes}"/>
