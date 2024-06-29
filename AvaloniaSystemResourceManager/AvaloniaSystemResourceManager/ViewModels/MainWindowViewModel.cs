@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using AvaloniaSystemResourceManager.Enums;
 using AvaloniaSystemResourceManager.Consts;
 using System.Reactive;
-using AvaloniaSystemResourceManager.Models;
 
 namespace AvaloniaSystemResourceManager.ViewModels
 {
@@ -77,26 +76,26 @@ namespace AvaloniaSystemResourceManager.ViewModels
                 {
                     Values = new ObservableCollection<double>(),
                     Name = "Sent Data",
-                    Fill = new SolidColorPaint(SKColors.LightBlue.WithAlpha(50)),
-                    GeometryFill = null,
-                    GeometryStroke = null,
-                    LineSmoothness = 0,
-                    Stroke = new SolidColorPaint(SKColors.LightBlue) { StrokeThickness = 2 },
-                },
-                new LineSeries<double>
-                {
-                    Values = new ObservableCollection<double>(),
-                    Name = "Received Data",
                     Fill = new SolidColorPaint(SKColors.LightGreen.WithAlpha(50)),
                     GeometryFill = null,
                     GeometryStroke = null,
                     LineSmoothness = 0,
                     Stroke = new SolidColorPaint(SKColors.LightGreen) { StrokeThickness = 2 },
+                },
+                new LineSeries<double>
+                {
+                    Values = new ObservableCollection<double>(),
+                    Name = "Received Data",
+                    Fill = new SolidColorPaint(SKColors.YellowGreen.WithAlpha(50)),
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    LineSmoothness = 0,
+                    Stroke = new SolidColorPaint(SKColors.YellowGreen) { StrokeThickness = 2 },
                 }
             };
 
-            UpdatePerformanceMetricCommand = ReactiveCommand.Create<PerformanceMetric>(SetSelectedMetric);
-            SetSelectedMetric(PerformanceMetric.CPU);
+            UpdatePerformanceMetricCommand = ReactiveCommand.Create<PerformanceMetric>(UpdatePerformanceMetric);
+            UpdatePerformanceMetric(PerformanceMetric.CPU);
 
             StartSystemResourceDiagnosticsUpdateTimer();
         }
@@ -153,6 +152,14 @@ namespace AvaloniaSystemResourceManager.ViewModels
         public ObservableCollection<ISeries> WifiUsageSeries { get; }
         public Dictionary<string, ObservableCollection<ISeries>> DiskUsageSeries { get; } = new Dictionary<string, ObservableCollection<ISeries>>();
 
+        public void UpdateDiskPerformanceMetric(string diskName)
+        {
+            if (!string.IsNullOrEmpty(diskName))
+            {
+                SetChartConfiguration(PerformanceMetric.Disk, diskName);
+            }
+        }
+
         private void StartSystemResourceDiagnosticsUpdateTimer()
         {
             _timer = new Timer(1000);
@@ -171,18 +178,21 @@ namespace AvaloniaSystemResourceManager.ViewModels
                 var memoryStatus = await _memoryService.GetMemoryStatusAsync();
                 var wifiUsage = await _wifiService.GetCurrentWifiUsagePerSecondAsync();
                 var wifiSSID = await _wifiService.GetWifiSSIDAsync();
-                var gpuInfoList = await _gpuService.GetGpuInfosAsync();
-                var diskInfoList = await _diskService.GetDiskUsageAsync();
 
                 MemoryAvailability = $"{memoryStatus.UsedMemoryGB:F2}/{memoryStatus.TotalMemoryGB:F2} GB ({memoryUsagePercentageValue:F2}%)";
                 WifiUsage = $"{wifiSSID}{Environment.NewLine}Sent: {wifiUsage.SentMBPerSecond:F2} MB | Received: {wifiUsage.ReceivedMBPerSecond:F2} MB";
 
-                GetGpuInfos(gpuInfoList);
-                GetDiskInfos(diskInfoList);
+                await GetGpuInfos();
+                await GetDiskInfos();
 
                 UpdateCpuUsageSeries(cpuUsagePercentageValue);
                 UpdateMemoryUsageSeries(memoryUsagePercentageValue);
                 UpdateWifiUsageSeries(wifiUsage.SentMBPerSecond, wifiUsage.ReceivedMBPerSecond);
+
+                foreach (var diskInfo in DiskInfos)
+                {
+                    UpdateDiskUsageSeries(diskInfo.Name, diskInfo.WriteSpeedMBps, diskInfo.ReadSpeedMBps);
+                }
             }
             catch (Exception)
             {
@@ -190,8 +200,10 @@ namespace AvaloniaSystemResourceManager.ViewModels
             }
         }
 
-        private void GetGpuInfos(IEnumerable<GpuInfo> gpuInfoList)
+        private async Task GetGpuInfos()
         {
+            var gpuInfoList = await _gpuService.GetGpuInfosAsync();
+
             foreach (var gpuInfo in gpuInfoList)
             {
                 var gpuNames = GpuInfos.Select(x => x.Name);
@@ -206,11 +218,18 @@ namespace AvaloniaSystemResourceManager.ViewModels
             }
         }
 
-        private void GetDiskInfos(IEnumerable<DiskInfo> diskInfoList) 
+        private async Task GetDiskInfos()
         {
+            var diskInfoList = await _diskService.GetDiskUsageAsync();
+
             int diskIndex = 0;
             foreach (var diskInfo in diskInfoList)
             {
+                if (string.IsNullOrWhiteSpace(diskInfo.Name))
+                {
+                    continue;
+                }
+
                 var existingDiskInfo = DiskInfos.FirstOrDefault(x => x.Name == diskInfo.Name);
                 if (existingDiskInfo != null)
                 {
@@ -276,7 +295,33 @@ namespace AvaloniaSystemResourceManager.ViewModels
             }
         }
 
-        private void SetChartConfiguration(PerformanceMetric selectedMetric)
+        private void UpdateDiskUsageSeries(string diskName, double writeSpeed, double readSpeed)
+        {
+            if (!DiskUsageSeries.ContainsKey(diskName))
+            {
+                InitializeDiskSeries();
+            }
+
+            var series = DiskUsageSeries[diskName];
+            var writeSeries = series[0] as LineSeries<double>;
+            var writeValues = writeSeries.Values as ObservableCollection<double>;
+            var readSeries = series[1] as LineSeries<double>;
+            var readValues = readSeries.Values as ObservableCollection<double>;
+
+            if (writeValues.Count >= PerformanceChartConfiguration.MAX_CHART_SECONDS)
+            {
+                writeValues.RemoveAt(0);
+            }
+            writeValues.Add(writeSpeed);
+
+            if (readValues.Count >= PerformanceChartConfiguration.MAX_CHART_SECONDS)
+            {
+                readValues.RemoveAt(0);
+            }
+            readValues.Add(readSpeed);
+        }
+
+        private void SetChartConfiguration(PerformanceMetric selectedMetric, string diskName = null)
         {
             var chartConfig = PerformanceChartConfiguration.GetPerformanceChartConfiguration(selectedMetric);
 
@@ -284,15 +329,15 @@ namespace AvaloniaSystemResourceManager.ViewModels
             YAxes = chartConfig.YAxes;
             Title = chartConfig.Title;
 
-            SetCurrentResourceSeries(selectedMetric);
+            SetCurrentResourceSeries(selectedMetric, diskName);
         }
 
-        private void SetSelectedMetric(PerformanceMetric metric)
+        private void UpdatePerformanceMetric(PerformanceMetric selectedMetric)
         {
-            SetChartConfiguration(metric);
+            SetChartConfiguration(selectedMetric);
         }
 
-        private void SetCurrentResourceSeries(PerformanceMetric selectedMetric)
+        private void SetCurrentResourceSeries(PerformanceMetric selectedMetric, string diskName = null)
         {
             switch (selectedMetric)
             {
@@ -305,8 +350,46 @@ namespace AvaloniaSystemResourceManager.ViewModels
                 case PerformanceMetric.WiFi:
                     CurrentResourceSeries = WifiUsageSeries;
                     break;
+                case PerformanceMetric.Disk:
+                    DiskUsageSeries.TryGetValue(diskName, out var selectedDiskSeries);
+
+                    if (selectedDiskSeries is not null)
+                    {
+                        CurrentResourceSeries = selectedDiskSeries;
+                    }
+                    break;
                 default:
                     break;
+            }
+        }
+
+        private void InitializeDiskSeries()
+        {
+            foreach (var disk in DiskInfos)
+            {
+                DiskUsageSeries[disk.Name] = new ObservableCollection<ISeries>
+                {
+                    new LineSeries<double>
+                    {
+                        Values = new ObservableCollection<double>(),
+                        Name = "Write Speed",
+                        Fill = new SolidColorPaint(SKColors.SandyBrown.WithAlpha(50)),
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        LineSmoothness = 0,
+                        Stroke = new SolidColorPaint(SKColors.SandyBrown) { StrokeThickness = 2 },
+                    },
+                    new LineSeries<double>
+                    {
+                        Values = new ObservableCollection<double>(),
+                        Name = "Read Speed",
+                        Fill = new SolidColorPaint(SKColors.Brown.WithAlpha(50)),
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        LineSmoothness = 0,
+                        Stroke = new SolidColorPaint(SKColors.Brown) { StrokeThickness = 2 },
+                    }
+                };
             }
         }
     }

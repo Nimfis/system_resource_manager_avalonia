@@ -12,6 +12,7 @@ namespace AvaloniaSystemResourceManager.Consts
     {
         public const int MAX_CHART_SECONDS = 60;
         public const int MAX_CHART_PERCENTAGE = 100;
+        public const int MAX_DISK_CHART_MBPS = 100;
 
         public static (IEnumerable<Axis> XAxes, IEnumerable<Axis> YAxes, LabelVisual Title) GetPerformanceChartConfiguration(PerformanceMetric metric)
         {
@@ -35,6 +36,11 @@ namespace AvaloniaSystemResourceManager.Consts
                     xAxes.Add(CreateAxis(MAX_CHART_SECONDS, "s"));
                     yAxes.Add(CreateAxis(10, "MB/s", isDataRateAxis: true));
                     title = CreateTitle("WiFi Usage:");
+                    break;
+                case PerformanceMetric.Disk:
+                    xAxes.Add(CreateAxis(MAX_CHART_SECONDS, "s", isDataRateAxis: false));
+                    yAxes.Add(CreateAxis(MAX_DISK_CHART_MBPS, "MB/s", isDataRateAxis: true));
+                    title = CreateTitle("Disk Read/Write Speeds:");
                     break;
                 default:
                     break;

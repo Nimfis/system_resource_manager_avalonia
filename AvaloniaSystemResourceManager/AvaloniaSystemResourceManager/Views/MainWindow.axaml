@@ -2,14 +2,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AvaloniaSystemResourceManager.ViewModels"
 		xmlns:e="using:AvaloniaSystemResourceManager.Enums"
+		xmlns:c="using:AvaloniaSystemResourceManager.Commands"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AvaloniaSystemResourceManager.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="AvaloniaSystemResourceManager">
+        Icon="/Assets/app-icon.JPG"
+        Title="SRM - System Resource Manager">
 
 	<Design.DataContext>
 		<!-- This only sets the DataContext for the previewer in an IDE,
@@ -24,10 +25,10 @@
 			<ColumnDefinition Width="7*" />
 		</Grid.ColumnDefinitions>
 
-		<StackPanel Grid.Column="0">
+		<StackPanel Grid.Column="0" Background="LightBlue">
 			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.CPU}"
-					HorizontalAlignment="Stretch" Margin="5" Height="60">
-				
+					HorizontalAlignment="Stretch" Height="60" Background="SkyBlue" Margin="5,5,5,0" CornerRadius="0">
+
 				<StackPanel Orientation="Vertical">
 					<TextBlock Text="CPU:" FontWeight="Bold" FontSize="16" />
 					<TextBlock Text="{Binding CpuUsagePercentage}" FontSize="12" Margin="0,5,0,0"/>
@@ -35,7 +36,7 @@
 			</Button>
 
 			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.RAM}"
-					HorizontalAlignment="Stretch" Margin="5" Height="60">
+					HorizontalAlignment="Stretch" Height="60" Background="SkyBlue" Margin="5,5,5,0" CornerRadius="0">
 
 				<StackPanel Orientation="Vertical">
 					<TextBlock Text="Memory:" FontWeight="Bold" FontSize="16" />
@@ -44,7 +45,7 @@
 			</Button>
 
 			<Button Command="{Binding UpdatePerformanceMetricCommand}" CommandParameter="{x:Static e:PerformanceMetric.WiFi}"
-					HorizontalAlignment="Stretch" Margin="5" Height="70">
+					HorizontalAlignment="Stretch" Height="70" Background="SkyBlue" Margin="5,5,5,0" CornerRadius="0">
 
 				<StackPanel Orientation="Vertical">
 					<TextBlock Text="Wi-Fi:" FontWeight="Bold" FontSize="16" />
@@ -55,28 +56,35 @@
 			<ItemsControl ItemsSource="{Binding DiskInfos}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Orientation="Vertical" Margin="5 10 0 0">
-							<TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="16" />
-							<TextBlock Text="{Binding WriteSpeedMBps, StringFormat='Write speed: {0:F2} MB/s'}" FontSize="14" />
-							<TextBlock Text="{Binding ReadSpeedMBps, StringFormat='Read speed: {0:F2} MB/s'}" FontSize="14" />
+						<StackPanel Orientation="Vertical">
+							<Button Click="DiskButton_Click"
+									HorizontalAlignment="Stretch" Height="70" Background="SkyBlue" Margin="5,5,5,0" CornerRadius="0">
+								<StackPanel Orientation="Vertical">
+									<TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="16"/>
+									<TextBlock Text="{Binding WriteSpeedMBps, StringFormat='Write speed: {0:F2} MB/s'}" FontSize="12" />
+									<TextBlock Text="{Binding ReadSpeedMBps, StringFormat='Read speed: {0:F2} MB/s'}" FontSize="12" />
+								</StackPanel>
+							</Button>
 						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
+
+			<TextBlock Text="GPU Units:" Margin="0,5,0,0" Height="40" FontWeight="Bold" Background="SteelBlue" Foreground="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="5,10,0,0"></TextBlock>
 
 			<ItemsControl ItemsSource="{Binding GpuInfos}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<StackPanel Orientation="Vertical" Margin="5 10 0 0">
 							<TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" />
-							<TextBlock Text="{Binding MemoryGB, StringFormat='Memory: {0:F2} GB'}" FontSize="14" />
+							<TextBlock Text="{Binding MemoryGB, StringFormat='Memory: {0:F2} GB'}" FontSize="12" />
 						</StackPanel>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</StackPanel>
 
-		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Gray" />
+		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="SteelBlue" />
 
 		<Grid Grid.Column="2">
 			<lvc:CartesianChart

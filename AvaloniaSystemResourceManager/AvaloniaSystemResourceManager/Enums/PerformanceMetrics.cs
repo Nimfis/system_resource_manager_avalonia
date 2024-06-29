@@ -4,6 +4,7 @@
     {
         CPU,
         RAM,
-        WiFi
+        WiFi,
+        Disk
     }
 }
